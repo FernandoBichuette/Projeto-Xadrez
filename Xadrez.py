@@ -46,11 +46,15 @@ while True:
     if not board.is_checkmate() and not board.is_stalemate():
         print(stockfish.get_board_visual())
         
-        mov_user=input("Qual jogada?:")
+
+        stockfish.set_fen_position(board.fen())
+        mov_user=stockfish.get_best_move()
+        
+        #mov_user=input("Qual jogada?:")
 
         #mov_user='a2a3'
         board.push_san(mov_user)
-    
+
         
         stockfish.set_fen_position(board.fen())
         mov_robot=stockfish.get_best_move()
@@ -62,6 +66,7 @@ while True:
         board.push_san(mov_robot)
         print(stockfish.get_board_visual())
         
+
         manda_robo(manda_modbus)
     
         if board.is_check():
