@@ -16,6 +16,7 @@ SERVER_ADDRESS = '10.103.16.103'
 SERVER_PORT = 502
 server = ModbusServer(SERVER_ADDRESS, SERVER_PORT, no_block = True)
 
+
 def conversao_stockfish(mov_robot):
     mov_robot_convert=re.findall(r'[A-Ha-h]|[0-8]', mov_robot)
     for i in range(len(mov_robot_convert)):
@@ -27,38 +28,45 @@ def conversao_stockfish(mov_robot):
 
 def manda_robo(manda_modbus):
     
-    server.data_bank.set_input_registers(184, [0])  #Desliga led verde 
-    server.data_bank.set_input_registers(185, [1])  #Liga led vermelho 
-    DATA_SENT = [float(i * 22.5) for i in manda_modbus] #mm
+    server.data_bank.set_input_registers(184, [1])  #Desliga led verde 
+    DATA_SENT = [float(i * (22.5/100)) for i in manda_modbus] #mm
     server.data_bank.set_input_registers(180,DATA_SENT)
     time.sleep(5)
 
+def is_rook_move(move):
+    move_obj = chess.Move.from_uci(move)
+    piece = board.piece_at(move_obj.from_square)
+    return piece.symbol().lower() == 'k' and abs(move_obj.from_square - move_obj.to_square) 
+
+print('Starting server...')
+#server.start()
+print('Server is online')
+
+#Variaveis
+contador_de_xeques=0
 
 while True:
-    print('Starting server...')
-    server.start()
-    print('Server is online')
-    
-    server.data_bank.set_input_registers(184, [1])  #Liga led verde
-    server.data_bank.set_input_registers(185, [0])  #Desliga led vermelho 
+
+    server.data_bank.set_input_registers(184, [0])  #Liga led
     time.sleep(1)
 
     if not board.is_checkmate() and not board.is_stalemate():
-        print(stockfish.get_board_visual())
         
-
+        
         stockfish.set_fen_position(board.fen())
         mov_user=stockfish.get_best_move()
-        
+            
         #mov_user=input("Qual jogada?:")
-
         #mov_user='a2a3'
         board.push_san(mov_user)
-
+        print(stockfish.get_board_visual())
         
         stockfish.set_fen_position(board.fen())
         mov_robot=stockfish.get_best_move()
 
+        if is_rook_move(mov_robot):
+            print("Movimento de rook detectado!")
+            print(mov_robot)
         
         print(conversao_stockfish(mov_robot))
         manda_modbus=(conversao_stockfish(mov_robot))
@@ -67,11 +75,14 @@ while True:
         print(stockfish.get_board_visual())
         
 
-        manda_robo(manda_modbus)
-    
+        #manda_robo(manda_modbus)
+
         if board.is_check():
             print("O jogo está em xeque!")
-            # Aqui você pode adicionar a lógica para permitir apenas movimentos do rei
+            contador_de_xeques+=1
+            if contador_de_xeques>=3:
+                print("Fim de jogo, empate")
+                break
 
         if board.is_checkmate():
             print("Cheque mate")
