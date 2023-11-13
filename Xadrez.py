@@ -28,22 +28,27 @@ def conversao_stockfish(mov_robot):
 
 def manda_robo(manda_modbus):
     
-    server.data_bank.set_input_registers(184, [1])  #Desliga led verde 
-    DATA_SENT = [float(i * (22.5/100)) for i in manda_modbus] #mm
-    server.data_bank.set_input_registers(180,DATA_SENT)
-    time.sleep(5)
+    DATA_SENT = [float((i * 45)+22.5) for i in manda_modbus] #mm
+
+    while server.data_bank.get_discrete_inputs(331)==1:
+        server.data_bank.set_input_registers(180,DATA_SENT)
+        print("entrou")
+        time.sleep(10)
 
 def is_rook_move(move):
     move_obj = chess.Move.from_uci(move)
     piece = board.piece_at(move_obj.from_square)
-    return piece.symbol().lower() == 'k' and abs(move_obj.from_square - move_obj.to_square) 
+    return piece.symbol().lower() == 'k' and abs(move_obj.from_square - move_obj.to_square) == 2
+
 
 print('Starting server...')
-#server.start()
+server.start()
 print('Server is online')
 
 #Variaveis
 contador_de_xeques=0
+state=server.data_bank.get_discrete_inputs(330)
+
 
 while True:
 
@@ -52,30 +57,54 @@ while True:
 
     if not board.is_checkmate() and not board.is_stalemate():
         
-        
         stockfish.set_fen_position(board.fen())
         mov_user=stockfish.get_best_move()
-            
         #mov_user=input("Qual jogada?:")
         #mov_user='a2a3'
+
         board.push_san(mov_user)
+        tabuleiro_anterior = board.copy()
+        print("Vez peça branca")
         print(stockfish.get_board_visual())
-        
+        print("")
+        time.sleep(1)
+
         stockfish.set_fen_position(board.fen())
         mov_robot=stockfish.get_best_move()
-
-        if is_rook_move(mov_robot):
-            print("Movimento de rook detectado!")
-            print(mov_robot)
         
-        print(conversao_stockfish(mov_robot))
+        if is_rook_move(mov_robot):
+            mov_robot_obj = chess.Move.from_uci(mov_robot)
+            print("Movimento de rook detectado!")
+            king_position = chess.square_name(mov_robot_obj.from_square)
+            rook_position = chess.square_name(mov_robot_obj.to_square)
+            print(f"Posição do Rei: {king_position}")
+            print(f"Posição da Torre: {rook_position}")
+            
+        
         manda_modbus=(conversao_stockfish(mov_robot))
         
+        tabuleiro_inicio = board.copy()
         board.push_san(mov_robot)
-        print(stockfish.get_board_visual())
-        
+        tabuleiro_final = board.copy()
 
-        #manda_robo(manda_modbus)
+        for square in chess.SQUARES:
+            if tabuleiro_final.piece_at(square) is not None and tabuleiro_inicio.piece_at(square) is None:
+                print("Uma peça foi capturada na posição: ", chess.square_name(square))
+                server.data_bank.set_input_registers(188,[1])#Captura
+
+        stockfish.set_fen_position(board.fen())
+        print("Vez peça preta")
+        print(stockfish.get_board_visual())
+        print(manda_modbus)
+        print("")
+        time.sleep(1)
+
+        manda_robo(manda_modbus)
+        
+        time.sleep(1)
+
+        server.data_bank.set_input_registers(180,[0,0,0,0])        
+        server.data_bank.set_input_registers(188,[0])#Movimento
 
         if board.is_check():
             print("O jogo está em xeque!")
@@ -95,7 +124,7 @@ while True:
         elif board.is_stalemate():
             print("Empate por falta de movimentos possíveis.")
             break
-    
+
     
     
 
