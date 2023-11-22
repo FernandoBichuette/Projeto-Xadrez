@@ -7,7 +7,9 @@ from pyModbusTCP.server import ModbusServer,DataBank
 from time import sleep
 from random import uniform
 
-stockfish_path = "C:\\Users\\ferna\\OneDrive\\Documentos\\Insper\\7° Periodo\\Robotica Industrial\\Projeto Xadrez\\stockfish-windows-x86-64-avx2.exe"
+from FINAL_VISAO import jogada_realizada_adversario
+
+stockfish_path = "C:\\Users\\ferna\\OneDrive\\Documentos\\Insper\\7Periodo\\RoboticaIndustrial\\Projeto Xadrez\\stockfish-windows-x86-64-avx2.exe"
 stockfish = Stockfish(stockfish_path)
 
 board=chess.Board()
@@ -15,6 +17,9 @@ board=chess.Board()
 SERVER_ADDRESS = '10.103.16.103'
 SERVER_PORT = 502
 server = ModbusServer(SERVER_ADDRESS, SERVER_PORT, no_block = True)
+
+dif=[]
+jogada_anterior=['a3', 'a4', 'a5', 'a6', 'b3', 'b4', 'b5', 'b6', 'c3', 'c4', 'c5', 'c6', 'd3', 'd4', 'd5', 'd6', 'e3', 'e4', 'e5', 'e6', 'f3', 'f4', 'f5', 'f6', 'g3', 'g4', 'g5', 'g6', 'h3', 'h4', 'h5', 'h6']
 
 
 def conversao_stockfish(mov_robot):
@@ -58,40 +63,30 @@ while True:
     if not board.is_checkmate() and not board.is_stalemate():
         
         
+        
         if server.data_bank.get_holding_registers(330) == [1]:
-            variavel = 1 - variavel  # Toggle between 0 and 1
-            print("entrou")
-            
-
-        if variavel == 0  and not executou_bloco_do_jogador:
-            server.data_bank.set_input_registers(184, [0])
-            time.sleep(0.2)
-
-            #stockfish.set_fen_position(board.fen())
-            #mov_user=stockfish.get_best_move()
-            mov_user=input("Qual jogada?:")
-            #mov_user='a2a3'
-
-            board.push_san(mov_user)
-            tabuleiro_anterior = board.copy()
-            print("Vez peça branca")
-            stockfish.set_fen_position(board.fen())
-            print(stockfish.get_board_visual())
-            print("")
-            time.sleep(1)
-            
-            executou_bloco_do_jogador = True
+            variavel = 1-variavel # Toggle between 0 and 1
+            print('Entrou no botao')
+            mov_user=jogada_realizada_adversario(jogada_anterior)
+            print(mov_user)
+            jogada_anterior=mov_user[1]
+            board.push_san(mov_user[0])
+            print(mov_user)
+            print('Entrou no botao2')
+            executou_bloco_do_jogador=True
             executou_bloco_do_robo=False
+            
 
+        if variavel == 0 and not executou_bloco_do_jogador:
+            print('Entrou no variavel 0')
+            time.sleep(0.2)
 
         if variavel == 1 and not executou_bloco_do_robo:
-
-            server.data_bank.set_input_registers(184, [1])
-            time.sleep(0.2)
-
             
-            #mov_robot=stockfish.get_best_move()
-            mov_robot='a7a5'
+        
+            stockfish.set_fen_position(board.fen())
+            mov_robot=stockfish.get_best_move()
+            #mov_robot='a7a5'
             if is_rook_move(mov_robot):
                 mov_robot_obj = chess.Move.from_uci(mov_robot)
                 print("Movimento de rook detectado!")
@@ -110,6 +105,7 @@ while True:
             for square in chess.SQUARES:
                 if tabuleiro_final.piece_at(square) is not None and tabuleiro_inicio.piece_at(square) is None:
                     print("Uma peça foi capturada na posição: ", chess.square_name(square))
+                    print("A peça capturada foi: ", tabuleiro_inicio.piece_at(square))
                     server.data_bank.set_input_registers(188,[1])#Captura
 
             stockfish.set_fen_position(board.fen())
@@ -119,15 +115,19 @@ while True:
             print("")
             time.sleep(1)
 
+            empty_squares = [chess.square_name(square) for square in chess.SQUARES if board.piece_at(square) is None]
+            jogada_anterior.extend(empty_squares)
+
             manda_robo(manda_modbus)
-            
             time.sleep(0.2)
 
             server.data_bank.set_input_registers(188,[0])
             time.sleep(0.2)
             server.data_bank.set_input_registers(186,[0]) 
+        
+
             executou_bloco_do_jogador=False
-            executou_bloco_do_robo=True
+            executou_bloco_do_robo==True
             variavel=0
                 
 
@@ -147,9 +147,12 @@ while True:
                 print("O vencedor é o jogador das peças brancas!")
             break
 
-        elif board.is_stalemate():
+        if board.is_stalemate():
             print("Empate por falta de movimentos possíveis.")
             break
+
+        
+
 
     
     
