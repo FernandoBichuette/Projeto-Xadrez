@@ -309,10 +309,10 @@ def jogada_realizada_adversario(jogada_anterior,cor_anterior):
         cv.line(out2, (j * bloco_largura, 0), (j * bloco_largura, altura), (0, 255, 0), 2)
 
     # Naming a window 
-    cv.namedWindow("Imagem com Grid e Rótulos e circulos", cv.WINDOW_NORMAL) 
+    #cv.namedWindow("Imagem com Grid e Rótulos e circulos", cv.WINDOW_NORMAL) 
     
     # Using resizeWindow() 
-    cv.resizeWindow("Imagem com Grid e Rótulos e circulos", 800, 800) 
+    #cv.resizeWindow("Imagem com Grid e Rótulos e circulos", 800, 800) 
     
     # Displaying the image 
     #cv.imshow("Imagem com Grid e Rótulos e circulos", out2) 

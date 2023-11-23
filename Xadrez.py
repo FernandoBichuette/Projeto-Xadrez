@@ -23,23 +23,44 @@ def conversao_stockfish(mov_robot):
     return mov_robot_convert
 
 
-def manda_robo(manda_modbus):
+def manda_robo(manda_modbus, tabuleiro_inicio, tabuleiro_final):
     data_sent = [float((i * 45) + 20) for i in manda_modbus]  # mm
     server.data_bank.set_input_registers(180, data_sent)
     time.sleep(0.2)
-    server.data_bank.set_input_registers(186, [1])
-    '''while server.data_bank.get_holding_registers(331) == [0]:
-        time.sleep(0.1)'''
 
+    Tipo_mov = 0
 
-def detecta_captura(tabuleiro_inicio, tabuleiro_final):
-    for square in chess.SQUARES:
+    # Contagem de peças
+    num_pieces_inicio = sum(1 for square in chess.SQUARES if tabuleiro_inicio.piece_at(square) is not None)
+    num_pieces_final = sum(1 for square in chess.SQUARES if tabuleiro_final.piece_at(square) is not None)
+
+    print(f"Número de peças no início: {num_pieces_inicio}")
+    print(f"Número de peças no final: {num_pieces_final}")
+
+    if num_pieces_inicio > num_pieces_final:
+        Tipo_mov = 2  # Captura
+    else:
+        Tipo_mov = 1
+
+    '''for square in chess.SQUARES:
         piece_inicio = tabuleiro_inicio.piece_at(square)
         piece_final = tabuleiro_final.piece_at(square)
+
         if piece_final is not None and piece_inicio is None:
-            print(f"Uma peça foi capturada na posição: {chess.square_name(square)}")
-            print(f"A peça capturada foi: {piece_inicio}")
-            server.data_bank.set_input_registers(186, [2])  # Captura
+            Tipo_mov = 2  # Captura
+        elif piece_inicio is not None and piece_final is None:
+            Tipo_mov = 2  # Captura
+        elif piece_inicio is not None:
+            Tipo_mov = 1  # Mov
+            '''
+    print(Tipo_mov)
+    time.sleep(1)
+    server.data_bank.set_input_registers(186, [Tipo_mov])
+    time.sleep(1)
+
+    while server.data_bank.get_holding_registers(331) == [0]:
+        time.sleep(0.1)
+
 
 
 def is_rook_move(move):
@@ -62,12 +83,12 @@ while True:
     if not board.is_checkmate() and not board.is_stalemate():
         
         
-        #if server.data_bank.get_holding_registers(330) == [1]:
-        if variavel==0:
+        if server.data_bank.get_holding_registers(330) == [1]:
+        #if variavel==0:
             variavel = 1 - variavel  # Toggle between 0 and 1
             print('Entrou no botao')
             try:
-                teste=input('Go?')
+                #teste=input('Go?')
                 mov_user = jogada_realizada_adversario(jogada_anterior,cor_anterior)
                 print(mov_user)
                 jogada_anterior = mov_user[1]
@@ -80,12 +101,13 @@ while True:
             except chess.IllegalMoveError as e:
                 print(f"Erro ao fazer o movimento: {e}")
                 variavel=0
+                executou_bloco_do_jogador = False
+                executou_bloco_do_robo = True
                 # Displaying the image 
                 #cv.imshow("Imagem com Grid e Rótulos e circulos", mov_user[2]) 
                 #cv.waitKey(0)
 
         if variavel == 0 and not executou_bloco_do_jogador:
-            print('Entrou no variavel 0')
 
             time.sleep(0.2)
 
@@ -110,9 +132,6 @@ while True:
             cor_anterior = {square: 'white' if tabuleiro_final.piece_at(chess.parse_square(square)).color == chess.WHITE else 'black' for square in chess.SQUARE_NAMES if tabuleiro_final.piece_at(chess.parse_square(square)) is not None}
             time.sleep(1)
 
-            detecta_captura(tabuleiro_inicio, tabuleiro_final)
-            time.sleep(0.2)
-
             stockfish.set_fen_position(board.fen())
             print("Vez peça preta")
             print(stockfish.get_board_visual())
@@ -125,7 +144,7 @@ while True:
             jogada_anterior=empty_squares
             
     
-            manda_robo(manda_modbus)
+            manda_robo(manda_modbus,tabuleiro_inicio, tabuleiro_final)
             time.sleep(0.2)
 
             server.data_bank.set_input_registers(188, [0])
