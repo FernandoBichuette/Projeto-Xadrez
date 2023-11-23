@@ -10,12 +10,18 @@ import os
 
 dif=[]
 jogada_anterior=['a3', 'a4', 'a5', 'a6', 'b3', 'b4', 'b5', 'b6', 'c3', 'c4', 'c5', 'c6', 'd3', 'd4', 'd5', 'd6', 'e3', 'e4', 'e5', 'e6', 'f3', 'f4', 'f5', 'f6', 'g3', 'g4', 'g5', 'g6', 'h3', 'h4', 'h5', 'h6']
-      
-
 # Inicialize a câmera
-cam_port = 0
-cam = cv.VideoCapture(cam_port)
+cam_port = 1
+cam = cv.VideoCapture(cam_port, cv.CAP_DSHOW)
+#cam = cv.VideoCapture(cam_port)
 
+# Set camera parameters
+cam.set(cv.CAP_PROP_FRAME_WIDTH, 1920)   # Set frame width
+cam.set(cv.CAP_PROP_FRAME_HEIGHT, 1080)   # Set frame height
+cam.set(cv.CAP_PROP_BRIGHTNESS, 128)    # Set brightness (0.0 to 1.0)
+cam.set(cv.CAP_PROP_CONTRAST, 128)      # Set contrast (0.0 to 1.0)
+cam.set(cv.CAP_PROP_SATURATION, 120)    # Set saturation (0.0 to 1.0)
+cam.set(cv.CAP_PROP_EXPOSURE, -5)       # Set exposure (-7.0 to -1.0 for manual exposure)
 
 
 # Verifique se a captura de vídeo foi bem-sucedida
@@ -30,34 +36,38 @@ else:
         print("Erro ao capturar o quadro da câmera.")
     else:
         #cv.imshow("original", image)
+        #cv.waitKey(0)
+        #cv.destroyAllWindows()
+
         cv.imwrite("board.png", image)
 
-        board=image
-        image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
+    board=image
+    image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
 
-        # lower boundary RED color range values; Hue (0 - 10)
-        lower1 = np.array([0, 120, 150])
-        upper1 = np.array([10, 255, 255])
+    # lower boundary RED color range values; Hue (0 - 10)
+    lower1 = np.array([0, 120, 150])
+    upper1 = np.array([10, 255, 255])
 
-        # upper boundary RED color range values; Hue (160 - 180)
-        lower2 = np.array([160,200,20])
-        upper2 = np.array([179,255,255])
+    # upper boundary RED color range values; Hue (160 - 180)
+    lower2 = np.array([160,200,20])
+    upper2 = np.array([179,255,255])
 
-        lower_mask = cv.inRange(image, lower1, upper1)
-        upper_mask = cv.inRange(image, lower2, upper2)
+    lower_mask = cv.inRange(image, lower1, upper1)
+    upper_mask = cv.inRange(image, lower2, upper2)
 
-        full_mask = lower_mask + upper_mask
-        result = cv.bitwise_and(image, image, mask=full_mask)
+    full_mask = lower_mask + upper_mask
+    result = cv.bitwise_and(image, image, mask=full_mask)
 
-        #realizando uma erosao seguida de uma dilatacao, na mascara
-        kernel = cv.getStructuringElement(cv.MORPH_RECT, (2, 2))
-        clean = cv.morphologyEx(full_mask, cv.MORPH_OPEN, kernel)
-        clean = cv.medianBlur(clean,5)
+    #realizando uma erosao seguida de uma dilatacao, na mascara
+    kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3))
+    clean = cv.morphologyEx(full_mask, cv.MORPH_OPEN, kernel)
+    clean = cv.medianBlur(clean,5)
 
-cv.imshow('mask', clean)
+
+#cv.imshow('mask', clean)
 #cv.imshow('result', result)
 cv.imwrite("board_dots.png", clean)
-cv.waitKey(0)
+#cv.waitKey(0)
 #cv.destroyAllWindows()
 
 img = cv.imread('board_dots.png', cv.COLOR_BGR2GRAY)
@@ -69,24 +79,29 @@ left_range = int(width * 0.2)
 right_range = int(width * 0.8)
 
 # Iterate through each pixel
-'''for y in range(height):
+for y in range(height):
     for x in range(width):
         # Check if the pixel is on the 20% left or right side
         if x <= left_range or x >= right_range:
             # Check if the pixel color is (255, 255, 255)
             if img[y, x] == 255:
                 # Change the pixel color to (0, 0, 0)
-                img[y, x] = 0'''
+                img[y, x] = 0
 
 # Display the modified image
 #cv.imshow('Modified Image', img)
 #cv.waitKey(0)
 #cv.destroyAllWindows()
 
-circles = cv.HoughCircles(img,cv.HOUGH_GRADIENT,dp=1,minDist=200,param1=3,param2=5,minRadius=0,maxRadius=20)
+circles = cv.HoughCircles(img,cv.HOUGH_GRADIENT,dp=1,minDist=300,param1=3,param2=5,minRadius=0,maxRadius=20)
 #print(circles)
 
-
+x_centro_ref=0
+y_centro_ref=0
+bottom_right=0
+bottom_left=0
+top_right=0
+top_left=0
 
 cimg1 = cv.cvtColor(img,cv.COLOR_GRAY2BGR)
 circles = np.uint16(np.around(circles))
@@ -102,6 +117,8 @@ for i in circles[0,:]:
         if i[1]<height/2:
             top_left=i
 
+    x_centro_ref=x_centro_ref+i[0]
+    y_centro_ref=y_centro_ref+i[1]
     # draw the outer circle
     cv.circle(cimg1,(i[0],i[1]),i[2],(0,255,0),2)
     # draw the center of the circle
@@ -204,84 +221,76 @@ out2 = cv.rotate(out2, cv.ROTATE_180)
 #plt.show()
 
 
-# Tamanho da imagem
+# Assuming 'out2' is your image
 altura, largura = out2.shape[:2]
 
-# Dividir a imagem em uma grade de 8x8
 linhas = 8
 colunas = 8
 bloco_altura = altura // linhas
 bloco_largura = largura // colunas
 
-# Dicionário para armazenar os blocos com seus nomes
 blocos = {}
-
-# Lista para armazenar blocos sem círculos
 blocos_sem_circulos = []
 
-# Nomes das linhas (letras)
-letras_linha = string.ascii_lowercase[:linhas]  # 'a' a 'h'
+letras_linha = string.ascii_lowercase[:linhas]
+numeros_coluna = [str(i + 1) for i in range(colunas)]
 
-# Nomes das colunas (números)
-numeros_coluna = [str(i + 1) for i in range(colunas)]  # '1' a '8'
-
-# Iterar sobre a grade e salvar cada bloco com seu nome
 for i, letra in enumerate(letras_linha):
     for j, numero in enumerate(numeros_coluna):
         nome_bloco = f"{letra}{numero}"
         bloco = out2[i * bloco_altura: (i + 1) * bloco_altura, j * bloco_largura: (j + 1) * bloco_largura]
         blocos[nome_bloco] = bloco
 
-        # Conversão para escala de cinza e aplicação de um desfoque para detecção mais precisa de círculos
         gray = cv.cvtColor(bloco, cv.COLOR_BGR2GRAY)
-        gray = cv.medianBlur(gray, 1)
-        circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, dp=1, minDist=20, param1=40, param2=21, minRadius=0, maxRadius=0)
+        gray = cv.medianBlur(gray, 5)
+        circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, dp=1, minDist=20, param1=50, param2=30, minRadius=0, maxRadius=0)
 
-        # Se não encontrar círculos, adicionar o nome do bloco à lista de blocos sem círculos
-         # Se não encontrar círculos, adicionar o nome do bloco à lista de blocos sem círculos
         if circles is None:
             blocos_sem_circulos.append(nome_bloco)
         else:
-            # Adicionar rótulos aos blocos na imagem
-            cv.putText(out2, nome_bloco, (j * bloco_largura + 10, (i + 1) * bloco_altura - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-
-            # Desenhar os círculos detectados
             circles = np.uint16(np.around(circles))
+
+            # Adjust circle coordinates according to the block position in the original image
             for circle in circles[0, :]:
-                center = (circle[0] + j * bloco_largura, circle[1] + i * bloco_altura)
+                center = (circle[0] + j * bloco_largura, circle[1] + i * bloco_altura)  # Adjusting center coordinates
                 radius = circle[2]
-                cv.circle(out2, center, radius, (0, 255, 0), 2)  # Green circles
+                cv.circle(out2, center, radius, (0, 255, 0), 2)
 
-# Mostrar a imagem com os rótulos e círculos
+        cv.putText(out2, nome_bloco, (j * bloco_largura + 10, (i + 1) * bloco_altura - 10),
+                   cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
-# Desenhar o grid na imagem
 for i in range(1, linhas):
     cv.line(out2, (0, i * bloco_altura), (largura, i * bloco_altura), (0, 255, 0), 2)
 for j in range(1, colunas):
     cv.line(out2, (j * bloco_largura, 0), (j * bloco_largura, altura), (0, 255, 0), 2)
 
-# Imprimir a imagem com o grid, rótulos e os blocos sem círculos
-cv.imshow('Imagem com Grid e Rótulos', out2)
+# Naming a window 
+cv.namedWindow("Imagem com Grid e Rótulos e circulos", cv.WINDOW_NORMAL) 
+  
+# Using resizeWindow() 
+cv.resizeWindow("Imagem com Grid e Rótulos e circulos", 800, 800) 
+  
+# Displaying the image 
+cv.imshow("Imagem com Grid e Rótulos e circulos", out2) 
 cv.waitKey(0)
-cv.destroyAllWindows()
+
 
 # Imprimir a lista de blocos sem círculos
-print(" Chessboard Empty Slots:")
-print(blocos_sem_circulos)
+#print(" Chessboard Empty Slots:")
+#print(blocos_sem_circulos)
 jogada_seguinte=blocos_sem_circulos
 
 # Convert lists to sets and find the difference
 
-inner_set = set(jogada_seguinte) & set(jogada_anterior)
-EXPECTED_OUTPUT = [i for i in jogada_seguinte + jogada_anterior if i not in inner_set]
-VAMOO=EXPECTED_OUTPUT[0]+EXPECTED_OUTPUT[1]
-print(VAMOO)
+dif.append(list(set(jogada_seguinte).symmetric_difference(set(jogada_anterior))))
+dif[0]=dif[0][1]+dif[0][0]
+print(dif)
 
-
-
-
-dif.clear()
+#dif.clear()
 #print(dif)
 jogada_anterior=jogada_seguinte
 #print(jogada_anterior)
+
+
+
 

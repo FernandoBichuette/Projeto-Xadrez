@@ -13,7 +13,7 @@ import os
 
 
 
-def jogada_realizada_adversario(jogada_anterior):
+def jogada_realizada_adversario(jogada_anterior,cor_anterior):
 
     global top_left
     global top_right
@@ -22,8 +22,16 @@ def jogada_realizada_adversario(jogada_anterior):
 
     dif=[]
     # Inicialize a câmera
-    cam_port = 0
-    cam = cv.VideoCapture(cam_port)
+    cam_port = 1
+    cam = cv.VideoCapture(cam_port, cv.CAP_DSHOW)
+
+    # Set camera parameters
+    cam.set(cv.CAP_PROP_FRAME_WIDTH, 1920)   # Set frame width
+    cam.set(cv.CAP_PROP_FRAME_HEIGHT, 1080)   # Set frame height
+    cam.set(cv.CAP_PROP_BRIGHTNESS, 128)    # Set brightness (0.0 to 1.0)
+    cam.set(cv.CAP_PROP_CONTRAST, 128)      # Set contrast (0.0 to 1.0)
+    cam.set(cv.CAP_PROP_SATURATION, 120)    # Set saturation (0.0 to 1.0)
+    cam.set(cv.CAP_PROP_EXPOSURE, -5)       # Set exposure (-7.0 to -1.0 for manual exposure)
 
     # Verifique se a captura de vídeo foi bem-sucedida
     if not cam.isOpened():
@@ -76,14 +84,14 @@ def jogada_realizada_adversario(jogada_anterior):
     right_range = int(width * 0.8)
 
     # Iterate through each pixel
-    '''for y in range(height):
+    for y in range(height):
         for x in range(width):
             # Check if the pixel is on the 20% left or right side
             if x <= left_range or x >= right_range:
                 # Check if the pixel color is (255, 255, 255)
                 if img[y, x] == 255:
                     # Change the pixel color to (0, 0, 0)
-                    img[y, x] = 0'''
+                    img[y, x] = 0
 
     # Display the modified image
     #cv.imshow('Modified Image', img)
@@ -214,6 +222,9 @@ def jogada_realizada_adversario(jogada_anterior):
     # Tamanho da imagem
     altura, largura = out2.shape[:2]
 
+    block_colors = {}
+
+
     # Dividir a imagem em uma grade de 8x8
     linhas = 8
     colunas = 8
@@ -242,7 +253,7 @@ def jogada_realizada_adversario(jogada_anterior):
             # Conversão para escala de cinza e aplicação de um desfoque para detecção mais precisa de círculos
             gray = cv.cvtColor(bloco, cv.COLOR_BGR2GRAY)
             gray = cv.medianBlur(gray, 5)
-            circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, dp=1, minDist=20, param1=40, param2=22, minRadius=0, maxRadius=0)
+            circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, dp=1, minDist=20, param1=50, param2=30, minRadius=0, maxRadius=0)
 
             # Se não encontrar círculos, adicionar o nome do bloco à lista de blocos sem círculos
             # Se não encontrar círculos, adicionar o nome do bloco à lista de blocos sem círculos
@@ -258,6 +269,36 @@ def jogada_realizada_adversario(jogada_anterior):
                     center = (circle[0] + j * bloco_largura, circle[1] + i * bloco_altura)
                     radius = circle[2]
                     cv.circle(out2, center, radius, (0, 255, 0), 2)  # Green circles
+                
+                # Define a small radius around the center
+                small_radius = 3
+
+                # Extract the region around the center
+                region_around_center = bloco[max(0, circle[1] - small_radius):min(bloco.shape[0], circle[1] + small_radius + 1),
+                                             max(0, circle[0] - small_radius):min(bloco.shape[1], circle[0] + small_radius + 1)]
+
+                # Calculate the average color within the region
+                avg_color = np.mean(region_around_center, axis=(0, 1))
+                avg_color = avg_color.astype(int)
+
+                # Calculate grayscale intensity (luminance)
+                grayscale_intensity = 0.299 * avg_color[2] + 0.587 * avg_color[1] + 0.114 * avg_color[0]
+
+                # Determine if the color is closer to white or black based on grayscale intensity
+                color_category = "white" if grayscale_intensity > 128 else "black"
+                #print(f"A cor no centro do círculo em {nome_bloco} é mais próxima de {color_category}")
+
+                # Save the block name and color category in the dictionary
+                block_colors[nome_bloco] = color_category
+
+                #cv.circle(out2, center, radius, (0, 255, 0), 2)  # Green circles
+
+
+    # Print the dictionary of block names and color categories
+    print("Block Names and Color Categories:")
+    print(block_colors)
+    cor_atual=block_colors
+
 
     # Mostrar a imagem com os rótulos e círculos
 
@@ -267,10 +308,15 @@ def jogada_realizada_adversario(jogada_anterior):
     for j in range(1, colunas):
         cv.line(out2, (j * bloco_largura, 0), (j * bloco_largura, altura), (0, 255, 0), 2)
 
-    # Imprimir a imagem com o grid, rótulos e os blocos sem círculos
-    cv.imshow('Imagem com Grid e Rótulos', out2)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
+    # Naming a window 
+    cv.namedWindow("Imagem com Grid e Rótulos e circulos", cv.WINDOW_NORMAL) 
+    
+    # Using resizeWindow() 
+    cv.resizeWindow("Imagem com Grid e Rótulos e circulos", 800, 800) 
+    
+    # Displaying the image 
+    #cv.imshow("Imagem com Grid e Rótulos e circulos", out2) 
+    #cv.waitKey(0)
 
     # Imprimir a lista de blocos sem círculos
     #print(" Chessboard Empty Slots:")
@@ -281,14 +327,23 @@ def jogada_realizada_adversario(jogada_anterior):
     
     inner_set = set(jogada_seguinte) & set(jogada_anterior)
     EXPECTED_OUTPUT = [i for i in jogada_seguinte + jogada_anterior if i not in inner_set]
-    dif=EXPECTED_OUTPUT[0]+EXPECTED_OUTPUT[1]
-    print(dif)
+    if len(EXPECTED_OUTPUT)<2:
+        # Initialize a variable to store keys with different values
+        differing_keys = []
+
+        # Compare the dictionaries
+        for key in cor_anterior:
+            if key in cor_atual and cor_anterior[key] != cor_atual[key]:
+                differing_keys.append(key)
 
 
-    #dif.append(list(set(jogada_anterior).symmetric_difference(set(jogada_seguinte))))
-    #dif[0]=dif[0][0]+dif[0][1]
-    #print(dif)
 
-    #print(dif)
-    #print(jogada_anterior)
-    return dif,jogada_anterior
+        dif=EXPECTED_OUTPUT[0]+differing_keys[0]
+        print(dif)
+    else:
+        dif=EXPECTED_OUTPUT[0]+EXPECTED_OUTPUT[1]
+        print(dif)
+
+
+
+    return dif,jogada_anterior, cor_atual
