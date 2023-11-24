@@ -336,13 +336,11 @@ def jogada_realizada_adversario(jogada_anterior,cor_anterior):
             if key in cor_atual and cor_anterior[key] != cor_atual[key]:
                 differing_keys.append(key)
 
-
-
         dif=EXPECTED_OUTPUT[0]+differing_keys[0]
-        print(dif)
+        #print(dif)
     else:
         dif=EXPECTED_OUTPUT[0]+EXPECTED_OUTPUT[1]
-        print(dif)
+        #print(dif)
 
 
 

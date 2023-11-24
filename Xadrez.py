@@ -9,6 +9,9 @@ from FINAL_VISAO import jogada_realizada_adversario
 stockfish_path = "C:\\Users\\ferna\\OneDrive\\Documentos\\Insper\\7Periodo\\RoboticaIndustrial\\Projeto Xadrez\\stockfish-windows-x86-64-avx2.exe"
 stockfish = Stockfish(stockfish_path)
 
+stockfish.set_depth(20)#How deep the AI looks
+stockfish.set_skill_level(20)#Highest rank stockfish
+
 board = chess.Board()
 
 SERVER_ADDRESS = '10.103.16.103'
@@ -23,50 +26,73 @@ def conversao_stockfish(mov_robot):
     return mov_robot_convert
 
 
-def manda_robo(manda_modbus, tabuleiro_inicio, tabuleiro_final):
-    data_sent = [float((i * 45) + 20) for i in manda_modbus]  # mm
-    server.data_bank.set_input_registers(180, data_sent)
-    time.sleep(0.2)
+def manda_robo(manda_modbus, tabuleiro_inicio, tabuleiro_final,houve_roque,manda_o_rei):
+    
+    if houve_roque == 0:
+        data_sent = [float((i * 45) + 20) for i in manda_modbus]  # mm
+        server.data_bank.set_input_registers(180, data_sent)
+        time.sleep(0.2)
 
-    Tipo_mov = 0
+        Tipo_mov = 0
 
-    # Contagem de peças
-    num_pieces_inicio = sum(1 for square in chess.SQUARES if tabuleiro_inicio.piece_at(square) is not None)
-    num_pieces_final = sum(1 for square in chess.SQUARES if tabuleiro_final.piece_at(square) is not None)
+        # Contagem de peças
+        num_pieces_inicio = sum(1 for square in chess.SQUARES if tabuleiro_inicio.piece_at(square) is not None)
+        num_pieces_final = sum(1 for square in chess.SQUARES if tabuleiro_final.piece_at(square) is not None)
 
-    print(f"Número de peças no início: {num_pieces_inicio}")
-    print(f"Número de peças no final: {num_pieces_final}")
+        print(f"Número de peças no início: {num_pieces_inicio}")
+        print(f"Número de peças no final: {num_pieces_final}")
 
-    if num_pieces_inicio > num_pieces_final:
-        Tipo_mov = 2  # Captura
+        if num_pieces_inicio > num_pieces_final:
+            Tipo_mov = 2  # Captura
+        else:
+            Tipo_mov = 1
+    
+        print(Tipo_mov)
+        time.sleep(1)
+        server.data_bank.set_input_registers(186, [Tipo_mov])
+        time.sleep(1)
+
+        while server.data_bank.get_holding_registers(331) == [0]:
+            time.sleep(0.1)
+    
+    
     else:
-        Tipo_mov = 1
+        Tipo_mov = 3
+        print("Fez roque")
+    
+        data_sent_rei = [float((i * 45) + 20) for i in manda_o_rei]
+        server.data_bank.set_input_registers(180, data_sent_rei)
+        
 
-    '''for square in chess.SQUARES:
-        piece_inicio = tabuleiro_inicio.piece_at(square)
-        piece_final = tabuleiro_final.piece_at(square)
+        time.sleep(1)
+        server.data_bank.set_input_registers(186, [Tipo_mov])
+        time.sleep(1)
 
-        if piece_final is not None and piece_inicio is None:
-            Tipo_mov = 2  # Captura
-        elif piece_inicio is not None and piece_final is None:
-            Tipo_mov = 2  # Captura
-        elif piece_inicio is not None:
-            Tipo_mov = 1  # Mov
-            '''
-    print(Tipo_mov)
-    time.sleep(1)
-    server.data_bank.set_input_registers(186, [Tipo_mov])
-    time.sleep(1)
+        while server.data_bank.get_holding_registers(330) == [0]:
+            time.sleep(0.1)
 
-    while server.data_bank.get_holding_registers(331) == [0]:
-        time.sleep(0.1)
+        data_sent_torre = [float((i * 45) + 20) for i in manda_modbus]  # mm
+        server.data_bank.set_input_registers(180, data_sent_torre)
+        time.sleep(1)
+        server.data_bank.set_input_registers(186, [Tipo_mov])
+        time.sleep(1)
+        
+        
+        houve_roque = 0
 
+        while server.data_bank.get_holding_registers(331) == [0]:
+            time.sleep(0.1)
 
 
 def is_rook_move(move):
     move_obj = chess.Move.from_uci(move)
     piece = board.piece_at(move_obj.from_square)
-    return piece.symbol().lower() == 'k' and abs(move_obj.from_square - move_obj.to_square) == 2
+    
+    # Verifica se há uma peça na casa de origem e se é um rei
+    if piece and piece.symbol().lower() == 'k':
+        return abs(move_obj.from_square - move_obj.to_square) == 2
+    else:
+        return False
 
 
 print('Starting server...')
@@ -74,21 +100,23 @@ server.start()
 print('Server is online')
 
 # Variaveis
-contador_de_xeques = 0
 variavel = 0
+houve_roque=0
+contador=0
 
 executou_bloco_do_jogador = False
 executou_bloco_do_robo = True
 while True:
     if not board.is_checkmate() and not board.is_stalemate():
-        
+        server.data_bank.set_input_registers(184, [0])
+
         
         if server.data_bank.get_holding_registers(330) == [1]:
         #if variavel==0:
             variavel = 1 - variavel  # Toggle between 0 and 1
             print('Entrou no botao')
             try:
-                #teste=input('Go?')
+                contador=0
                 mov_user = jogada_realizada_adversario(jogada_anterior,cor_anterior)
                 print(mov_user)
                 jogada_anterior = mov_user[1]
@@ -100,35 +128,57 @@ while True:
                 executou_bloco_do_robo = False
             except chess.IllegalMoveError as e:
                 print(f"Erro ao fazer o movimento: {e}")
+                
+                while(contador<=5):
+                    server.data_bank.set_input_registers(184, [0])
+                    time.sleep(1)
+                    server.data_bank.set_input_registers(184, [2])
+                    time.sleep(1)
+                    server.data_bank.set_input_registers(184, [0])
+                    contador+=1
+
                 variavel=0
                 executou_bloco_do_jogador = False
                 executou_bloco_do_robo = True
-                # Displaying the image 
-                #cv.imshow("Imagem com Grid e Rótulos e circulos", mov_user[2]) 
-                #cv.waitKey(0)
 
         if variavel == 0 and not executou_bloco_do_jogador:
-
+            server.data_bank.set_input_registers(184, [1])
             time.sleep(0.2)
 
         if variavel == 1 and not executou_bloco_do_robo:
+            server.data_bank.set_input_registers(184, [0])
+            server.data_bank.set_input_registers(184, [2])
+
             stockfish.set_fen_position(board.fen())
             mov_robot = stockfish.get_best_move()
 
-            if is_rook_move(mov_robot):
-                mov_robot_obj = chess.Move.from_uci(mov_robot)
-                print("Movimento de rook detectado!")
-                king_position = chess.square_name(mov_robot_obj.from_square)
-                rook_position = chess.square_name(mov_robot_obj.to_square)
-                print(f"Posição do Rei: {king_position}")
-                print(f"Posição da Torre: {rook_position}")
-
-            manda_modbus = conversao_stockfish(mov_robot)
+            manda_o_rei = []
 
             tabuleiro_inicio = board.copy()
             board.push_san(mov_robot)
             tabuleiro_final = board.copy()
 
+
+            if is_rook_move(mov_robot):
+                mov_robot_obj = chess.Move.from_uci(mov_robot)
+                print("Movimento de rook detectado!")
+                king_position_antes = tabuleiro_inicio.square_name(mov_robot_obj.from_square)
+                rook_position_antes = tabuleiro_inicio.square_name(mov_robot_obj.to_square)
+                
+                king_position_depois = tabuleiro_final.square_name(mov_robot_obj.from_square)
+                rook_position_depois = tabuleiro_final.square_name(mov_robot_obj.to_square)
+
+    
+                houve_roque=1
+
+                manda_o_rei = conversao_stockfish([king_position_antes, king_position_depois])
+
+            if houve_roque == 0: manda_modbus = conversao_stockfish(mov_robot)
+
+            else:
+                manda_modbus= conversao_stockfish([rook_position_antes,rook_position_depois])
+
+            
             cor_anterior = {square: 'white' if tabuleiro_final.piece_at(chess.parse_square(square)).color == chess.WHITE else 'black' for square in chess.SQUARE_NAMES if tabuleiro_final.piece_at(chess.parse_square(square)) is not None}
             time.sleep(1)
 
@@ -144,7 +194,7 @@ while True:
             jogada_anterior=empty_squares
             
     
-            manda_robo(manda_modbus,tabuleiro_inicio, tabuleiro_final)
+            manda_robo(manda_modbus,tabuleiro_inicio, tabuleiro_final,houve_roque,manda_o_rei)
             time.sleep(0.2)
 
             server.data_bank.set_input_registers(188, [0])
@@ -156,11 +206,9 @@ while True:
             variavel = 0
 
         if board.is_check():
+
             print("O jogo está em xeque!")
-            contador_de_xeques += 1
-            if contador_de_xeques >= 3:
-                print("Fim de jogo, empate")
-                break
+            
 
         if board.is_checkmate():
             print("Cheque mate")
