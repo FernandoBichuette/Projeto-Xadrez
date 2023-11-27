@@ -344,4 +344,4 @@ def jogada_realizada_adversario(jogada_anterior,cor_anterior):
 
 
 
-    return dif,jogada_anterior, cor_atual
+    return dif,jogada_anterior, cor_atual, out2
