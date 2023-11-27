@@ -10,8 +10,8 @@ from FINAL_VISAO import jogada_realizada_adversario
 stockfish_path = "C:\\Users\\ferna\\OneDrive\\Documentos\\Insper\\7Periodo\\RoboticaIndustrial\\Projeto Xadrez\\stockfish-windows-x86-64-avx2.exe"
 stockfish = Stockfish(stockfish_path)
 
-stockfish.set_depth(6)#How deep the AI looks
-stockfish.set_skill_level(5)#Highest rank stockfish
+stockfish.set_depth(10)#How deep the AI looks
+stockfish.set_skill_level(15)#Highest rank stockfish
 
 board = chess.Board()
 
@@ -48,7 +48,7 @@ def manda_robo(manda_modbus, tabuleiro_inicio, tabuleiro_final):
         Tipo_mov = 2  # Captura
 
         i_y=random.randint(50,400)
-        i_x=random.randint(0,100)
+        i_x=random.randint(50,100)
         server.data_bank.set_input_registers(187,[i_y])
         server.data_bank.set_input_registers(188,[i_x])
         time.sleep(0.5)
@@ -169,14 +169,14 @@ while True:
                     time.sleep(1)
                     contador+=1
 
-                cv.namedWindow("Imagem com Grid e Rótulos e circulos", cv.WINDOW_NORMAL) 
+                #cv.namedWindow("Imagem com Grid e Rótulos e circulos", cv.WINDOW_NORMAL) 
     
                 # Using resizeWindow() 
-                cv.resizeWindow("Imagem com Grid e Rótulos e circulos", 800, 800) 
+                #cv.resizeWindow("Imagem com Grid e Rótulos e circulos", 800, 800) 
     
                 # Displaying the image 
-                cv.imshow("Imagem com Grid e Rótulos e circulos", mov_user[3]) 
-                cv.waitKey(0)
+                #cv.imshow("Imagem com Grid e Rótulos e circulos", mov_user[3]) 
+                #cv.waitKey(0)
 
                 variavel=0
                 executou_bloco_do_jogador = False
