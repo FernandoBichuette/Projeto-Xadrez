@@ -11,7 +11,7 @@ stockfish_path = "C:\\Users\\ferna\\OneDrive\\Documentos\\Insper\\7Periodo\\Robo
 stockfish = Stockfish(stockfish_path)
 
 stockfish.set_depth(10)#How deep the AI looks
-stockfish.set_skill_level(15)#Highest rank stockfish
+stockfish.set_skill_level(5)#Highest rank stockfish
 
 board = chess.Board()
 
