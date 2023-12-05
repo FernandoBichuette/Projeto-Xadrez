@@ -1,0 +1,113 @@
+ Program
+   Init Variables
+   BeforeStart
+     MoveJ
+       Waypoint_2
+     pos_foto≔Waypoint_2
+     Set saida_botao=0
+     Set mov_feito=0
+   Robot Program
+     If botao≟ True 
+       Set saida_botao=1
+       Set mov_feito=0
+       Loop saida_botao≟1
+         If pode_movimentar≟1
+           Call mover_peça
+         ElseIf pode_movimentar≟2
+           Call captura_peça
+         ElseIf pode_movimentar≟3
+           Call mover_peça
+           Wait: 1.0
+           Set mov_feito=0
+           Call mover_peça
+   mover_peça
+     Set DO[0]=On
+     x_1≔x_inicial
+     x_2≔x_final
+     y_1≔y_inicial
+     y_2≔y_final
+     Set saida_botao=0
+     ref≔get_actual_tcp_pose()
+     offset_pega1≔p[x_1/1000,y_1/1000,0,ref[3],ref[4],ref[5]]
+     offset_pega2≔p[x_1/1000,y_1/1000,-0.122,ref[3],ref[4],ref[5]]
+     offset_solta≔p[x_2/1000,y_2/1000,0,ref[3],ref[4],ref[5]]
+     offset_solta2≔p[x_2/1000,y_2/1000,-0.122,ref[3],ref[4],ref[5]]
+     Set open=On
+     Set close=Off
+     MoveL
+       offset_pega1
+       offset_pega2
+       Wait: 0.7
+     Set open=Off
+     Set close=On
+     Wait: 0.7
+     MoveL
+       offset_pega1
+       offset_solta
+       offset_solta2
+     Set close=Off
+     Set open=On
+     Wait: 0.7
+     MoveL
+       offset_solta
+     Set DO[0]=Off
+     Set mov_feito=1
+     MoveJ
+       Waypoint_2
+   captura_peça
+     Set DO[0]=On
+     Set saida_botao=0
+     x_d≔x_descarte
+     y_d≔y_descarte
+     x_1≔x_inicial
+     x_2≔x_final
+     y_1≔y_inicial
+     y_2≔y_final
+     ref≔get_actual_tcp_pose()
+     offset_pega1≔p[x_1/1000,y_1/1000,0,ref[3],ref[4],ref[5]]
+     offset_pega2≔p[x_1/1000,y_1/1000,-0.123,ref[3],ref[4],ref[5]]
+     offset_solta≔p[x_2/1000,y_2/1000,0,ref[3],ref[4],ref[5]]
+     offset_solta2≔p[x_2/1000,y_2/1000,-0.123,ref[3],ref[4],ref[5]]
+     pos_descarte≔p[-x_d/1000,y_d/1000,0,ref[3],ref[4],ref[5]]
+     pos_descarte2≔p[-x_d/1000,y_d/1000,-0.118,ref[3],ref[4],ref[5]]
+     Set open=On
+     Set close=Off
+     MoveL
+       offset_solta
+       offset_solta2
+       Set open=Off
+       Set close=On
+       Wait: 0.7
+       offset_solta
+       pos_descarte
+       pos_descarte2
+       Set close=Off
+       Set open=On
+       Wait: 0.7
+       pos_descarte
+       offset_pega1
+       offset_pega2
+       Set open=Off
+       Set close=On
+       Wait: 0.7
+       offset_pega1
+       offset_solta
+       offset_solta2
+       Set close=Off
+       Set open=On
+       Wait: 0.7
+       offset_solta
+     Set DO[0]=Off
+     Set mov_feito=1
+     MoveJ
+       Waypoint_2
+   Thread_1
+     If led≟0
+       Set DO[0]=Off
+       Set DO[1]=Off
+     ElseIf led≟1
+       Set DO[0]=On
+       Set DO[1]=Off
+     ElseIf led≟2
+       Set DO[1]=On
+       Set DO[0]=Off

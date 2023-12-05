@@ -1,0 +1,285 @@
+def turco2():
+  set_safety_mode_transition_hardness(0)
+  step_count_e0f02efe_ecea_4458_b3af_864a96aabadf = 0.0
+  thread Step_Counter_Thread_fc631101_b85e_447d_817b_a65cf862f3df():
+    while (True):
+      step_count_e0f02efe_ecea_4458_b3af_864a96aabadf = step_count_e0f02efe_ecea_4458_b3af_864a96aabadf + 1.0
+      sync()
+    end
+  end
+  run Step_Counter_Thread_fc631101_b85e_447d_817b_a65cf862f3df()
+  set_standard_analog_input_domain(0, 1)
+  set_standard_analog_input_domain(1, 1)
+  set_tool_analog_input_domain(0, 1)
+  set_tool_analog_input_domain(1, 1)
+  set_analog_outputdomain(0, 1)
+  set_analog_outputdomain(1, 1)
+  set_input_actions_to_default()
+  set_gravity([0.0, 0.0, 9.82])
+  set_tcp(p[-1.2789022916400258E-4,-0.0014886416073101082,0.15454578463352542,0.0,0.0,0.0])
+  set_payload(0.71, [2.6000000000000003E-4, 0.00206, 0.041299999999999996])
+  set_tool_voltage(24)
+  modbus_add_signal("10.103.16.103", 255, 180, 2, "x_inicial", False)
+  modbus_set_signal_update_frequency("x_inicial", 10)
+  modbus_add_signal("10.103.16.103", 255, 181, 2, "y_inicial", False)
+  modbus_set_signal_update_frequency("y_inicial", 10)
+  modbus_add_signal("10.103.16.103", 255, 182, 2, "x_final", False)
+  modbus_set_signal_update_frequency("x_final", 10)
+  modbus_add_signal("10.103.16.103", 255, 183, 2, "y_final", False)
+  modbus_set_signal_update_frequency("y_final", 10)
+  modbus_add_signal("10.103.16.103", 255, 184, 2, "led", False)
+  modbus_set_signal_update_frequency("led", 10)
+  modbus_add_signal("10.103.16.103", 255, 185, 2, "robo_jogando", False)
+  modbus_set_signal_update_frequency("robo_jogando", 10)
+  modbus_add_signal("10.103.16.103", 255, 330, 3, "saida_botao", False)
+  modbus_set_signal_update_frequency("saida_botao", 10)
+  modbus_add_signal("10.103.16.103", 255, 186, 2, "pode_movimentar", False)
+  modbus_set_signal_update_frequency("pode_movimentar", 10)
+  modbus_add_signal("10.103.16.103", 255, 331, 3, "mov_feito", False)
+  modbus_set_signal_update_frequency("mov_feito", 10)
+  modbus_add_signal("10.103.16.103", 255, 188, 2, "x_descarte", False)
+  modbus_set_signal_update_frequency("x_descarte", 10)
+  modbus_add_signal("10.103.16.103", 255, 187, 2, "y_descarte", False)
+  modbus_set_signal_update_frequency("y_descarte", 10)
+  modbus_set_runstate_dependent_choice("saida_botao",0)
+  modbus_set_runstate_dependent_choice("mov_feito",0)
+  global Contador=8
+  global Plane_3=p[0.3308713412446904,0.5296265595895947,-0.13126754597865364,-0.0020162660974664525,-0.0010663415176416437,8.171368940325215E-4]
+  global Plane_4=p[0.2721611380133276,-0.7130597275595757,0.0542294030481609,0.005347725586528444,0.0014743233619901501,1.5515038553186455]
+  global pontoDaFeature=p[-0.8282150600436514,0.015585933747148782,-0.09929176710538083,-1.2386264769801731,-1.198780749827371,1.1691249226442235]
+  # mover_peça
+  def mover_peu231a():
+    $ 22 "mover_peça" "noBreak"
+    $ 23 "Set DO[0]=On"
+    set_standard_digital_out(0, True)
+    $ 24 "x_1≔x_inicial"
+    global x_1=modbus_get_signal_status("x_inicial")
+    $ 25 "x_2≔x_final"
+    global x_2=modbus_get_signal_status("x_final")
+    $ 26 "y_1≔y_inicial"
+    global y_1=modbus_get_signal_status("y_inicial")
+    $ 27 "y_2≔y_final"
+    global y_2=modbus_get_signal_status("y_final")
+    $ 28 "Set saida_botao=0"
+    modbus_set_output_register("saida_botao", 0)
+    $ 29 "ref≔get_actual_tcp_pose()"
+    global ref= get_actual_tcp_pose ()
+    $ 30 "offset_pega1≔p[x_1/1000,y_1/1000,0,ref[3],ref[4],ref[5]]"
+    global offset_pega1=p[x_1/1000,y_1/1000,0,ref[3],ref[4],ref[5]]
+    $ 31 "offset_pega2≔p[x_1/1000,y_1/1000,-0.122,ref[3],ref[4],ref[5]]"
+    global offset_pega2=p[x_1/1000,y_1/1000,-0.122,ref[3],ref[4],ref[5]]
+    $ 32 "offset_solta≔p[x_2/1000,y_2/1000,0,ref[3],ref[4],ref[5]]"
+    global offset_solta=p[x_2/1000,y_2/1000,0,ref[3],ref[4],ref[5]]
+    $ 33 "offset_solta2≔p[x_2/1000,y_2/1000,-0.122,ref[3],ref[4],ref[5]]"
+    global offset_solta2=p[x_2/1000,y_2/1000,-0.122,ref[3],ref[4],ref[5]]
+    $ 34 "Set open=On"
+    set_tool_digital_out(1, True)
+    $ 35 "Set close=Off"
+    set_tool_digital_out(0, False)
+    $ 36 "MoveL"
+    $ 37 "offset_pega1" "breakAfter"
+    movel(pose_trans(Plane_4, offset_pega1), a=1.2, v=0.25)
+    $ 38 "offset_pega2" "breakAfter"
+    movel(pose_trans(Plane_4, offset_pega2), a=1.2, v=0.25)
+    $ 39 "Wait: 0.7"
+    sleep(0.7)
+    $ 40 "Set open=Off"
+    set_tool_digital_out(1, False)
+    $ 41 "Set close=On"
+    set_tool_digital_out(0, True)
+    $ 42 "Wait: 0.7"
+    sleep(0.7)
+    $ 43 "MoveL"
+    $ 44 "offset_pega1" "breakAfter"
+    movel(pose_trans(Plane_4, offset_pega1), a=1.2, v=0.25)
+    $ 45 "offset_solta" "breakAfter"
+    movel(pose_trans(Plane_4, offset_solta), a=1.2, v=0.25)
+    $ 46 "offset_solta2" "breakAfter"
+    movel(pose_trans(Plane_4, offset_solta2), a=1.2, v=0.25)
+    $ 47 "Set close=Off"
+    set_tool_digital_out(0, False)
+    $ 48 "Set open=On"
+    set_tool_digital_out(1, True)
+    $ 49 "Wait: 0.7"
+    sleep(0.7)
+    $ 50 "MoveL"
+    $ 51 "offset_solta" "breakAfter"
+    movel(pose_trans(Plane_4, offset_solta), a=1.2, v=0.25)
+    $ 52 "Set DO[0]=Off"
+    set_standard_digital_out(0, False)
+    $ 53 "Set mov_feito=1"
+    modbus_set_output_register("mov_feito", 1)
+    $ 54 "MoveJ"
+    $ 55 "Waypoint_2" "breakAfter"
+    movej(get_inverse_kin(p[.074542632095, -.607556555704, .480396627736, 3.131716593303, -.001011234082, -.010011170710], qnear=[-1.2635601202594202, -2.0909441153155726, -0.32942420641054326, -2.2853029409991663, 1.5545045137405396, -2.832076613103048]), a=1.3962634015954636, v=1.0471975511965976)
+  end
+  # captura_peça
+  def captura_peu231a():
+    $ 56 "captura_peça" "noBreak"
+    $ 57 "Set DO[0]=On"
+    set_standard_digital_out(0, True)
+    $ 58 "Set saida_botao=0"
+    modbus_set_output_register("saida_botao", 0)
+    $ 59 "x_d≔x_descarte"
+    global x_d=modbus_get_signal_status("x_descarte")
+    $ 60 "y_d≔y_descarte"
+    global y_d=modbus_get_signal_status("y_descarte")
+    $ 61 "x_1≔x_inicial"
+    global x_1=modbus_get_signal_status("x_inicial")
+    $ 62 "x_2≔x_final"
+    global x_2=modbus_get_signal_status("x_final")
+    $ 63 "y_1≔y_inicial"
+    global y_1=modbus_get_signal_status("y_inicial")
+    $ 64 "y_2≔y_final"
+    global y_2=modbus_get_signal_status("y_final")
+    $ 65 "ref≔get_actual_tcp_pose()"
+    global ref= get_actual_tcp_pose ()
+    $ 66 "offset_pega1≔p[x_1/1000,y_1/1000,0,ref[3],ref[4],ref[5]]"
+    global offset_pega1=p[x_1/1000,y_1/1000,0,ref[3],ref[4],ref[5]]
+    $ 67 "offset_pega2≔p[x_1/1000,y_1/1000,-0.123,ref[3],ref[4],ref[5]]"
+    global offset_pega2=p[x_1/1000,y_1/1000,-0.123,ref[3],ref[4],ref[5]]
+    $ 68 "offset_solta≔p[x_2/1000,y_2/1000,0,ref[3],ref[4],ref[5]]"
+    global offset_solta=p[x_2/1000,y_2/1000,0,ref[3],ref[4],ref[5]]
+    $ 69 "offset_solta2≔p[x_2/1000,y_2/1000,-0.123,ref[3],ref[4],ref[5]]"
+    global offset_solta2=p[x_2/1000,y_2/1000,-0.123,ref[3],ref[4],ref[5]]
+    $ 70 "pos_descarte≔p[-x_d/1000,y_d/1000,0,ref[3],ref[4],ref[5]]"
+    global pos_descarte=p[-x_d/1000,y_d/1000,0,ref[3],ref[4],ref[5]]
+    $ 71 "pos_descarte2≔p[-x_d/1000,y_d/1000,-0.118,ref[3],ref[4],ref[5]]"
+    global pos_descarte2=p[-x_d/1000,y_d/1000,-0.118,ref[3],ref[4],ref[5]]
+    $ 72 "Set open=On"
+    set_tool_digital_out(1, True)
+    $ 73 "Set close=Off"
+    set_tool_digital_out(0, False)
+    $ 74 "MoveL"
+    $ 75 "offset_solta" "breakAfter"
+    movel(pose_trans(Plane_4, offset_solta), a=1.2, v=0.25)
+    $ 76 "offset_solta2" "breakAfter"
+    movel(pose_trans(Plane_4, offset_solta2), a=1.2, v=0.25)
+    $ 77 "Set open=Off"
+    set_tool_digital_out(1, False)
+    $ 78 "Set close=On"
+    set_tool_digital_out(0, True)
+    $ 79 "Wait: 0.7"
+    sleep(0.7)
+    $ 80 "offset_solta" "breakAfter"
+    movel(pose_trans(Plane_4, offset_solta), a=1.2, v=0.25)
+    $ 81 "pos_descarte" "breakAfter"
+    movel(pose_trans(Plane_4, pos_descarte), a=1.2, v=0.25)
+    $ 82 "pos_descarte2" "breakAfter"
+    movel(pose_trans(Plane_4, pos_descarte2), a=1.2, v=0.25)
+    $ 83 "Set close=Off"
+    set_tool_digital_out(0, False)
+    $ 84 "Set open=On"
+    set_tool_digital_out(1, True)
+    $ 85 "Wait: 0.7"
+    sleep(0.7)
+    $ 86 "pos_descarte" "breakAfter"
+    movel(pose_trans(Plane_4, pos_descarte), a=1.2, v=0.25)
+    $ 87 "offset_pega1" "breakAfter"
+    movel(pose_trans(Plane_4, offset_pega1), a=1.2, v=0.25)
+    $ 88 "offset_pega2" "breakAfter"
+    movel(pose_trans(Plane_4, offset_pega2), a=1.2, v=0.25)
+    $ 89 "Set open=Off"
+    set_tool_digital_out(1, False)
+    $ 90 "Set close=On"
+    set_tool_digital_out(0, True)
+    $ 91 "Wait: 0.7"
+    sleep(0.7)
+    $ 92 "offset_pega1" "breakAfter"
+    movel(pose_trans(Plane_4, offset_pega1), a=1.2, v=0.25)
+    $ 93 "offset_solta" "breakAfter"
+    movel(pose_trans(Plane_4, offset_solta), a=1.2, v=0.25)
+    $ 94 "offset_solta2" "breakAfter"
+    movel(pose_trans(Plane_4, offset_solta2), a=1.2, v=0.25)
+    $ 95 "Set close=Off"
+    set_tool_digital_out(0, False)
+    $ 96 "Set open=On"
+    set_tool_digital_out(1, True)
+    $ 97 "Wait: 0.7"
+    sleep(0.7)
+    $ 98 "offset_solta" "breakAfter"
+    movel(pose_trans(Plane_4, offset_solta), a=1.2, v=0.25)
+    $ 99 "Set DO[0]=Off"
+    set_standard_digital_out(0, False)
+    $ 100 "Set mov_feito=1"
+    modbus_set_output_register("mov_feito", 1)
+    $ 101 "MoveJ"
+    $ 102 "Waypoint_2" "breakAfter"
+    movej(get_inverse_kin(p[.074542632095, -.607556555704, .480396627736, 3.131716593303, -.001011234082, -.010011170710], qnear=[-1.2635601202594202, -2.0909441153155726, -0.32942420641054326, -2.2853029409991663, 1.5545045137405396, -2.832076613103048]), a=1.3962634015954636, v=1.0471975511965976)
+  end
+  $ 2 "BeforeStart"
+  $ 3 "MoveJ"
+  $ 4 "Waypoint_2" "breakAfter"
+  movej(get_inverse_kin(p[.074542632095, -.607556555704, .480396627736, 3.131716593303, -.001011234082, -.010011170710], qnear=[-1.2635601202594202, -2.0909441153155726, -0.32942420641054326, -2.2853029409991663, 1.5545045137405396, -2.832076613103048]), a=1.3962634015954636, v=1.0471975511965976)
+  $ 5 "pos_foto≔Waypoint_2"
+  global pos_foto=p[.074542632095, -.607556555704, .480396627736, 3.131716593303, -.001011234082, -.010011170710]
+  $ 6 "Set saida_botao=0"
+  modbus_set_output_register("saida_botao", 0)
+  $ 7 "Set mov_feito=0"
+  modbus_set_output_register("mov_feito", 0)
+  $ 103 "Thread_1"
+  thread Thread_1():
+    while (True):
+      $ 104 "If led≟0"
+      if (modbus_get_signal_status("led") == 0):
+        $ 105 "Set DO[0]=Off"
+        set_standard_digital_out(0, False)
+        $ 106 "Set DO[1]=Off"
+        set_standard_digital_out(1, False)
+      else:
+        $ 107 "ElseIf led≟1"
+        if (modbus_get_signal_status("led") == 1):
+          $ 108 "Set DO[0]=On"
+          set_standard_digital_out(0, True)
+          $ 109 "Set DO[1]=Off"
+          set_standard_digital_out(1, False)
+        else:
+          $ 110 "ElseIf led≟2"
+          if (modbus_get_signal_status("led") == 2):
+            $ 111 "Set DO[1]=On"
+            set_standard_digital_out(1, True)
+            $ 112 "Set DO[0]=Off"
+            set_standard_digital_out(0, False)
+          end
+        end
+      end
+    end
+  end
+  threadId_Thread_1 = run Thread_1()
+  while (True):
+    $ 8 "Robot Program"
+    $ 9 "If botao≟ True "
+    if (get_standard_digital_in(0) ==   True  ):
+      $ 10 "Set saida_botao=1"
+      modbus_set_output_register("saida_botao", 1)
+      $ 11 "Set mov_feito=0"
+      modbus_set_output_register("mov_feito", 0)
+      $ 12 "Loop saida_botao≟1"
+      while (modbus_get_signal_status("saida_botao") == 1):
+        $ 13 "If pode_movimentar≟1"
+        if (modbus_get_signal_status("pode_movimentar") == 1):
+          $ 14 "Call mover_peça"
+          mover_peu231a()
+        else:
+          $ 15 "ElseIf pode_movimentar≟2"
+          if (modbus_get_signal_status("pode_movimentar") == 2):
+            $ 16 "Call captura_peça"
+            captura_peu231a()
+          else:
+            $ 17 "ElseIf pode_movimentar≟3"
+            if (modbus_get_signal_status("pode_movimentar") == 3):
+              $ 18 "Call mover_peça"
+              mover_peu231a()
+              $ 19 "Wait: 1.0"
+              sleep(1.0)
+              $ 20 "Set mov_feito=0"
+              modbus_set_output_register("mov_feito", 0)
+              $ 21 "Call mover_peça"
+              mover_peu231a()
+            end
+          end
+        end
+      end
+    end
+  end
+end
