@@ -151,7 +151,9 @@ circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, dp=1, minDist=20, param1=50, 
 ```
 O resultado foi o seguinte:
 
-<img src='detecção_circulos.png' width='500' height='400'>
+<img src='detecçãopeças.png' width='500' height='400'>
+
+Assim, é enviado para o código central do xadrez, qual foi feita a jogada pelo adversário, pois é sabido a disposiccao das peçcas anterior a foto e também, agora, posterior.
 
 
 
