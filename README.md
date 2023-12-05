@@ -134,6 +134,6 @@ out = cv.warpPerspective(img_copy, M, (img_copy.shape[1], img_copy.shape[0]), fl
 
 A imagem final foi a seguinte:
 
-<img src='enquadramento tabuleiro.png' width='500' height='400'>
+<img src='detecçãopeças.png' width='500' height='400'>
 
 
