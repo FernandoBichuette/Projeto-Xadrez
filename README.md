@@ -86,7 +86,7 @@ A imagem abaixo mostra a deteccao desses dos circulos e seu centro.
 
 E os quadrantes dos pontos:
 
-<img src='A01_Matemetica_aplicada_01.png' width='500' height='400'>
+<img src='quadrantes.png' width='500' height='400'>
 
 Um dos ultimos passos para a detecção do tabuleiro, é traçar um polígono usando as quatro coordenadas dos pontos vermelhos, como um tabuleiro.
 Usando polylines, foi desenhado esse poligono, e após isso, foi criado uma máscara sobre a imagem original, resultando em uma nova imagem. 
@@ -134,6 +134,6 @@ out = cv.warpPerspective(img_copy, M, (img_copy.shape[1], img_copy.shape[0]), fl
 
 A imagem final foi a seguinte:
 
-<img src='detecçãopeças.png' width='500' height='400'>
+<img src='enquadramento tabuleiro.png' width='500' height='400'>
 
 
