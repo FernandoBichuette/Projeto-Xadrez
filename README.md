@@ -1,4 +1,5 @@
 # Projeto de Róbótica Industrial - automatic chess player
+Estudantes do Sétimo Semestre do Curso de Engenharia Mecatrônica do Insper. Curso de Robótica Industrial.
 
 ## Introdução
 
@@ -18,4 +19,5 @@ O processo da análise de imagem, cujo objetivo é recohecer a jogada feita pelo
 ### Preparação do tabuleiro
 Nos vértices do tabuleiro de xadrez, foi colocado adesivos de cor vermelha, para facilitar a idnetificação pela WebCam. A foto do tabuleiro, pela visão da camera se encontra abaixo.
 
-![Screenshot](screenshot.png)
+<img src='tabuleiro.png' width='25'>
+
