@@ -37,6 +37,7 @@ A foto do tabuleiro, pela visão da camera se encontra abaixo.
 <img src='tabuleiro.png' width='400' height='300'>
 
 ### Detecção do tabuleiro
+
 Após ter a immagem crua do tabueliro e seus arredores, é transformada a imagem para a escala HSV, para que seja mais facil de detectar os adesivos vermelhos colocados (importante que não haja outros objetos vermelhos ao redor). 
 Sabe se que a escala vermelha, em HSV, pode estar em regiões delimitadas abaixo.
 
@@ -52,7 +53,7 @@ upper2 = np.array([179,255,255])
 
 Assim, as cores detectadas são vistas na imagem abaixo.
 
-<img src='deteccao_cor_vermelha.png' width='400' height='300'>
+<img src='deteccao_cor_vermelha.png' width='500' height='400'>
 
 Para limpeza da imagem é feito uma erosão, seguida de uma dilatação, da imagem, com o "MORPH_OPEN". Em seguida, é criado um kernel, que irá percorrer a imagem, e fazer uma borração, através do comando "medianBlur". Após esses processos, restará na imagem com somente os adesivos vermelhos desejados para localização do tabuleiro, sem imperfeições.
 
@@ -61,5 +62,26 @@ kernel = cv.getStructuringElement(cv.MORPH_RECT, (2, 2))
 clean = cv.morphologyEx(full_mask, cv.MORPH_OPEN, kernel)
 clean = cv.medianBlur(clean,5)
 ```
+A imagem final, se encontra abaixo, transformando em escala HSV para escala GRAY.
 
-<img src='imagem_limpa.png' width='400' height='300'>
+<img src='imagem_limpa.png' width='500' height='400'>
+
+Agora que existem a referencia do tabuleiro, é feito uma detecção do centro desses pequenos circulos e definiçcão de suas coordenadas dentro da imagem. A função HoughCircles detecta os circulos. Os parametros usados na função foram selecionados empiricamente até o resultado ideal.
+
+```
+circles = cv.HoughCircles(img,cv.HOUGH_GRADIENT,dp=1,minDist=200,param1=3,param2=5,minRadius=0,maxRadius=20)
+```
+
+A imagem abaixo mostra a deteccao desses dos circulos e seu centro.
+
+<img src='detecção_circulos.png' width='500' height='400'>
+
+Assim, foram definidos 4 quadrantes. 
+Aquele círculo detectado no primeiro quadrante, foi denominado como "top_right"
+Aquele círculo detectado no segundo quadrante, foi denominado como "top_left".
+Aquele círculo detectado no terceiro quadrante, foi denominado como "bottom_left"
+Aquele círculo detectado no quarto quadrante, foi denominado como "bottom_right"
+
+
+
+
