@@ -72,9 +72,6 @@ Agora que existem a referencia do tabuleiro, é feito uma detecção do centro d
 circles = cv.HoughCircles(img,cv.HOUGH_GRADIENT,dp=1,minDist=200,param1=3,param2=5,minRadius=0,maxRadius=20)
 ```
 
-A imagem abaixo mostra a deteccao desses dos circulos e seu centro.
-
-<img src='detecção_circulos.png' width='500' height='400'>
 
 Assim, foram definidos 4 quadrantes. 
 Aquele círculo detectado no primeiro quadrante, foi denominado como "top_right"
@@ -83,5 +80,60 @@ Aquele círculo detectado no terceiro quadrante, foi denominado como "bottom_lef
 Aquele círculo detectado no quarto quadrante, foi denominado como "bottom_right"
 
 
+A imagem abaixo mostra a deteccao desses dos circulos e seu centro.
+
+<img src='detecção_circulos.png' width='500' height='400'>
+
+E os quadrantes dos pontos:
+
+<img src='A01_Matemetica_aplicada_01.png' width='500' height='400'>
+
+Um dos ultimos passos para a detecção do tabuleiro, é traçar um polígono usando as quatro coordenadas dos pontos vermelhos, como um tabuleiro.
+Usando polylines, foi desenhado esse poligono, e após isso, foi criado uma máscara sobre a imagem original, resultando em uma nova imagem. 
+
+```
+square = cv.polylines(board, [pts], 
+                    isClosed, color, thickness)
+
+# Criar a máscara preta do mesmo tamanho da imagem
+mask = np.zeros_like(board)
+
+#Preencha o polígono na máscara com branco
+cv.fillPoly(mask, [pts], (255, 255, 255))
+
+# Aplique a máscara à imagem original para obter a ROI
+result = cv.bitwise_and(board, mask)
+
+# Encontre os limites da região não-nula na máscara
+(y, x) = np.where(mask[:, :, 0] != 0)
+(top_y, bottom_y) = (np.min(y), np.max(y))
+(left_x, right_x) = (np.min(x), np.max(x))
+
+```
+
+Por fim, uma última manipulação necessária é, redimensionar a imagem para se enquadrar como um tabuleiro, já que a imagem pode estar torta, pelo nao alinhamento dos adesivos vermelhos.
+Foi usado o comando abaixo, que transforma a matriz orginial na matriz desejada.
+
+```
+# Defina os pontos na ordem correta
+input_pts = np.float32([[top_left[0], top_left[1]],
+                        [bottom_left[0], bottom_left[1]],
+                        [bottom_right[0], bottom_right[1]],
+                        [top_right[0], top_right[1]]])
+
+# Defina as coordenadas de saída
+output_pts = np.float32([[0, 0], [0, height],
+                        [width, height], [width, 0]])
+
+# Calcule a matriz de transformação
+M = cv.getPerspectiveTransform(input_pts, output_pts)
+
+# Aplique a transformação de perspectiva
+out = cv.warpPerspective(img_copy, M, (img_copy.shape[1], img_copy.shape[0]), flags=cv.INTER_LINEAR)
+```
+
+A imagem final foi a seguinte:
+
+<img src='enquadramento tabuleiro.png' width='500' height='400'>
 
 
