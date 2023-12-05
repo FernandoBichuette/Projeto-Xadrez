@@ -136,4 +136,23 @@ A imagem final foi a seguinte:
 
 <img src='enquadramento tabuleiro.png' width='500' height='400'>
 
+### Detetecção de casas vazias e cores das peças
+
+Para finalizar o processo de análise da imagem, é necessário detectar os espaços vazios do tabuleiro (porque assim detecta-se a jogada feita pelo adversário), e as cores das peças (porque assim detecta-se movimentos de eliminação de uma peça).
+
+Para isso, foi dividio a imagem trabalhada em um grid 8x8, como um tabuleiro virtual de xadrez, e nomeado cada bloco como o próprio tabuleiro, a1, a2, a2, etc...
+
+Dessa forma, tendo ele dividido, loops são percorridos em cada bloco para extração dos dados.
+
+Para detectar a presença de peça, é usado novamente o HoughCircles, cujos parametros também foram definidos empiricamente.
+
+```
+circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, dp=1, minDist=20, param1=50, param2=30, minRadius=0, maxRadius=0)
+```
+O resultado foi o seguinte:
+
+<img src='detecção_circulos.png' width='500' height='400'>
+
+
+
 
