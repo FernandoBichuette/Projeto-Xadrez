@@ -224,10 +224,15 @@ jogada_anterior=['a3', 'a4', 'a5', 'a6', 'b3', 'b4', 'b5', 'b6', 'c3', 'c4', 'c5
 Assim, é analisado a diferença entre as duas listas e feito uma junção em uma unica string:
 
 ```
-'d2d4',
+'d2d4'
 ```
 
 onde d2 era um bloco ocupado que se tornou vazio, e d4, um bloco vazio que se tornou ocupado. A string 'd2d4', é enviada à engine, "Stockfish", que assim recebe a informação da jogada do adversário.
+
+## Melhorias de Projeto
+
+A fim de tornar o robô um jogador de xadrez cada vez mais próximo á um ser humano, é possível ser feita algumas melhorias de projeto.
+Uma delas é implementar um algoritmo de indentificação da regra "promoção" e também do "en passant", na qual não foi implementado.
 
 
 
