@@ -229,6 +229,12 @@ Assim, é analisado a diferença entre as duas listas e feito uma junção em um
 
 onde d2 era um bloco ocupado que se tornou vazio, e d4, um bloco vazio que se tornou ocupado. A string 'd2d4', é enviada à engine, "Stockfish", que assim recebe a informação da jogada do adversário.
 
+Ao receber a informação de qual peça do adversário foi movida o Stockfish, por meio de reforced learning, consegue prever qual a melhor jogada possível na rodada. Esse movimento que é uma string é convertido para uma lista de números, por exemplo a jogada “a1b2” vira uma lista [1,1,2,2]. Essa lista de valores é convertida para um valor em mm e mandado via Modbus para o robô UR.
+
+Quando todos os valores são mandados o código em Python manda um sinal avisando que o robô pode começar a se movimentar e então fica esperando receber um outro sinal do UR avisando que o robô já completou a movimentação. 
+
+Ao receber a confirmação o código do xadrez zera todos os inputs do Modbus e fica esperando o adversário fazer a jogada e apertar o botão
+
 ## Melhorias de Projeto
 
 A fim de tornar o robô um jogador de xadrez cada vez mais próximo á um ser humano, é possível ser feita algumas melhorias de projeto.
