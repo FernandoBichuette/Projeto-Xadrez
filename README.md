@@ -196,7 +196,7 @@ avg_color = avg_color.astype(int)
 # Calcula a intensidade numa escala de cinza
 grayscale_intensity = 0.299 * avg_color[2] + 0.587 * avg_color[1] + 0.114 * avg_color[0]
 
-# Determina se a cor é mais proxima d ebranca ou preta dependendo da intensidade
+# Determina se a cor é mais proxima de branca ou preta dependendo da intensidade
 
 color_category = "white" if grayscale_intensity > 128 else "black"
 ```
