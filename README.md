@@ -1,4 +1,4 @@
-# Projeto de Róbótica Industrial - automatic chess player
+# Projeto de Róbótica Industrial - Automatic Chess Player
 Estudantes do Sétimo Semestre do Curso de Engenharia Mecatrônica do Insper, para disciplina de Robótica Industrial.
 
 ## Introdução
@@ -203,11 +203,11 @@ color_category = "white" if grayscale_intensity > 128 else "black"
 
 ### Comunicação com o código central
 
-O código central, que esta conectado com a engine de Xadrez, "Stockfish", comunica com o código de visão computacional, cujo passo-a-passo e raciocionio foi demonstrado acima. Assim, o codigo central chama esse codigo (já que esta envelopado como uma funçao), ultilizando como input uma lista dos blocos vazios ateriormente e também um dicionario dos blocos ocupados com a cor da peça como valor.
+O código central, que esta conectado com a engine de Xadrez, "Stockfish", comunica com o código de visão computacional, cujo passo-a-passo e raciocionio foi demonstrado acima. Assim, o código central chama a função (já que esta envelopado como uma função), ultilizando como input, uma lista dos blocos vazios anteriormente, e também um dicionário dos blocos ocupados com a cor da peça como valor.
 
 O output da função será uma nova lista dos blocos vazios, uma string com a jogada identifcada e um novo dicionário atualizado com os blocos ocupados junto com a cor da peça como valor.
 
-Como o xadrez é um jogo em que as peças tem seu local incicial pré-determinado, quando interpreta-se a a nova disposicao do tabuleiro, usando a visão ccomputacional, é possível saber a jogada que foi feita.
+Como o xadrez é um jogo em que as peças tem seu local inicial pré-determinado, quando interpreta-se a nova disposição do tabuleiro, usando a visão computacional, é possível saber a jogada que foi feita.
 
 
 Para o exemplo indicado neste documento, a lista de blocos vazios identificada foi:
@@ -221,7 +221,13 @@ E como um xadrez é um jogo que sempre tem a posição de peças pré determinad
 jogada_anterior=['a3', 'a4', 'a5', 'a6', 'b3', 'b4', 'b5', 'b6', 'c3', 'c4', 'c5', 'c6', 'd3', 'd4', 'd5', 'd6', 'e3', 'e4', 'e5', 'e6', 'f3', 'f4', 'f5', 'f6', 'g3', 'g4', 'g5', 'g6', 'h3', 'h4', 'h5', 'h6']
 ```
 
-Assim, é analisado a diferença entre as duas listas e feito uma junção em uma unica string 'd2d4', onde d2 era um bloco ocupado que se tornou vazio, e d4, um bloco vazio que se tornou ocupado. A string 'd2d4', é enviada à engine, "Stockfish", que assim recebe a informação da jogada do adversário.
+Assim, é analisado a diferença entre as duas listas e feito uma junção em uma unica string:
+
+```
+'d2d4',
+```
+
+onde d2 era um bloco ocupado que se tornou vazio, e d4, um bloco vazio que se tornou ocupado. A string 'd2d4', é enviada à engine, "Stockfish", que assim recebe a informação da jogada do adversário.
 
 
 
