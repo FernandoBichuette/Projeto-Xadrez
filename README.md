@@ -1,5 +1,5 @@
 # Projeto de Róbótica Industrial - automatic chess player
-Estudantes do Sétimo Semestre do Curso de Engenharia Mecatrônica do Insper. Curso de Robótica Industrial.
+Estudantes do Sétimo Semestre do Curso de Engenharia Mecatrônica do Insper, para disciplina de Robótica Industrial.
 
 ## Introdução
 
@@ -13,15 +13,16 @@ O processo da análise de imagem, cujo objetivo é recohecer a jogada feita pelo
 - captura da imagem
 - detecção do tabuleiro
 - detetecção de casas vazias e cores das peças
+- comunicação com o código central
 
 ### Preparação do tabuleiro
 Nos vértices do tabuleiro de xadrez, foi colocado adesivos de cor vermelha, para facilitar a idnetificação pela WebCam. 
 
 ### Captura da imgem
-A captura da imagem acontece pelo referenciamento da porta que ela esta sendo ultilizada e também da definição de parametros desejados. Os parametrso escolhidos definem um tamanho especifico da image, assim, como paramtros que ajudam em sua posterior analise, dada a ambiente do local.
+A captura da imagem acontece pelo referenciamento da porta que ela esta sendo ultilizada e também da definição de parametros desejados. Os parâmetros escolhidos definem um tamanho especifico da imagem, assim como parâmetros que ajudam em sua posterior análise, dado o ambiente do local.
 
 ```
-cam_port = 1
+cam_port = 0
 cam = cv.VideoCapture(cam_port, cv.CAP_DSHOW)
 
 #Set camera parameters
@@ -34,11 +35,11 @@ cam.set(cv.CAP_PROP_EXPOSURE, -5)       # Set exposure (-7.0 to -1.0 for manual 
 ```
 A foto do tabuleiro, pela visão da camera se encontra abaixo.
 
-<img src='tabuleiro.png' width='400' height='300'>
+<img src='tabuleiro.png' width='600' height='500'>
 
 ### Detecção do tabuleiro
 
-Após ter a immagem crua do tabueliro e seus arredores, é transformada a imagem para a escala HSV, para que seja mais facil de detectar os adesivos vermelhos colocados (importante que não haja outros objetos vermelhos ao redor). 
+Após ter a imagem crua do tabuleiro e seus arredores, é transformada a imagem para a escala HSV, para que seja mais fácil de detectar os adesivos vermelhos colocados (importante que não haja outros objetos vermelhos ao redor). 
 Sabe se que a escala vermelha, em HSV, pode estar em regiões delimitadas abaixo.
 
 ```
@@ -53,7 +54,7 @@ upper2 = np.array([179,255,255])
 
 Assim, as cores detectadas são vistas na imagem abaixo.
 
-<img src='deteccao_cor_vermelha.png' width='500' height='400'>
+<img src='deteccao_cor_vermelha.png' width='600' height='500'>
 
 Para limpeza da imagem é feito uma erosão, seguida de uma dilatação, da imagem, com o "MORPH_OPEN". Em seguida, é criado um kernel, que irá percorrer a imagem, e fazer uma borração, através do comando "medianBlur". Após esses processos, restará na imagem com somente os adesivos vermelhos desejados para localização do tabuleiro, sem imperfeições.
 
@@ -64,9 +65,9 @@ clean = cv.medianBlur(clean,5)
 ```
 A imagem final, se encontra abaixo, transformando em escala HSV para escala GRAY.
 
-<img src='imagem_limpa.png' width='500' height='400'>
+<img src='imagem_limpa.png' width='600' height='500'>
 
-Agora que existem a referencia do tabuleiro, é feito uma detecção do centro desses pequenos circulos e definiçcão de suas coordenadas dentro da imagem. A função HoughCircles detecta os circulos. Os parametros usados na função foram selecionados empiricamente até o resultado ideal.
+Agora que existem as referência do tabuleiro, é feito uma detecção do centro desses pequenos círculos e definição de suas coordenadas dentro da imagem. A função HoughCircles detecta os círculos. Fois estipilado um valor minimo e ma'ximo do raio desse circulo, assim ccomo a distancia minima entre eles. Os parametros, como dp, param1 e param2, foram selecionados empiricamente até o resultado ideal, sabendo que representam uma maior facilidade, ou dificuldade, para encontrar os círculos.
 
 ```
 circles = cv.HoughCircles(img,cv.HOUGH_GRADIENT,dp=1,minDist=200,param1=3,param2=5,minRadius=0,maxRadius=20)
@@ -80,16 +81,16 @@ Aquele círculo detectado no terceiro quadrante, foi denominado como "bottom_lef
 Aquele círculo detectado no quarto quadrante, foi denominado como "bottom_right"
 
 
-A imagem abaixo mostra a deteccao desses dos circulos e seu centro.
+A imagem abaixo mostra a deteccao desses dos círculos e seu centro detectado.
 
-<img src='detecção_circulos.png' width='500' height='400'>
+<img src='detecção_circulos.png' width='600' height='500'>
 
 E os quadrantes dos pontos:
 
-<img src='quadrantes.png' width='500' height='400'>
+<img src='quadrantes.png' width='600' height='600'>
 
 Um dos ultimos passos para a detecção do tabuleiro, é traçar um polígono usando as quatro coordenadas dos pontos vermelhos, como um tabuleiro.
-Usando polylines, foi desenhado esse poligono, e após isso, foi criado uma máscara sobre a imagem original, resultando em uma nova imagem. 
+Usando polylines, foi desenhado esse polígono, e após isso, foi criado uma máscara sobre a imagem original, resultando em uma nova imagem. 
 
 ```
 square = cv.polylines(board, [pts], 
@@ -111,7 +112,8 @@ result = cv.bitwise_and(board, mask)
 
 ```
 
-Por fim, uma última manipulação necessária é, redimensionar a imagem para se enquadrar como um tabuleiro, já que a imagem pode estar torta, pelo nao alinhamento dos adesivos vermelhos.
+Por fim, uma última manipulação necessária é, redimensionar a imagem para se enquadrar como um tabuleiro, já que a imagem pode estar torta, pelo não alinhamento dos adesivos vermelhos. Assim, define-se as coordeandas dos centros dos pontos vermelhos, como os vértices da nova imagem.
+
 Foi usado o comando abaixo, que transforma a matriz orginial na matriz desejada.
 
 ```
@@ -134,17 +136,17 @@ out = cv.warpPerspective(img_copy, M, (img_copy.shape[1], img_copy.shape[0]), fl
 
 A imagem final foi a seguinte:
 
-<img src='enquadramento tabuleiro.png' width='500' height='400'>
+<img src='enquadramento tabuleiro.png' width='600' height='500'>
 
 ### Detetecção de casas vazias e cores das peças
 
 Para finalizar o processo de análise da imagem, é necessário detectar os espaços vazios do tabuleiro (porque assim detecta-se a jogada feita pelo adversário), e as cores das peças (porque assim detecta-se movimentos de eliminação de uma peça).
 
-Para isso, foi dividio a imagem trabalhada em um grid 8x8, como um tabuleiro virtual de xadrez, e nomeado cada bloco como o próprio tabuleiro, a1, a2, a2, etc...
+Para isso, foi dividio a imagem trabalhada em um grid 8x8, como um tabuleiro virtual de xadrez, e nomeado cada bloco como o próprio tabuleiro, a1, a2, a2, b1, b2 etc... sendo a letra a coluna e o número a linha do grid.
 
 Dessa forma, tendo ele dividido, loops são percorridos em cada bloco para extração dos dados.
 
-Para detectar a presença de peça, é usado novamente o HoughCircles, cujos parametros também foram definidos empiricamente.
+Para detectar a presença de peça, é usado novamente o HoughCircles, cujos parametros também foram definidos empiricamente, a fim de se ter uma precisão maior, sem a presença de falsos positivos, nem falsos negativos.
 
 ```
 circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, dp=1, minDist=20, param1=50, param2=30, minRadius=0, maxRadius=0)
@@ -152,6 +154,18 @@ circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, dp=1, minDist=20, param1=50, 
 O resultado foi o seguinte:
 
 <img src='pecas.png' width='500' height='400'>
+
+Assim, é visto as casas que não possuem uma peça, para futura identificação da jogada.
+
+Porém, para jogadas que comem a peça do adversário, além de identificar os blocos que possuem peça, é necessario identifcar qual a cor dessa peça. Isso acontece pois quando existe esse tipo de jogada, um novo bloco vazio é criado, porém um novo bloco ocupado não é formado, e sim substituído pela peça que comeu.  
+
+Assim, para cada bloco com peça, é criado um circulo de analise e seu centro. Se a cor preodminante for mais próxima de branco, é considerado como peça branca, e caso for mais próxima de preto, será considerado uma peça preta.
+
+O seguinte codigo demonstra isso:
+
+
+### Comunicação com o código central
+
 
 Assim, é enviado para o código central do xadrez, qual foi feita a jogada pelo adversário, pois é sabido a disposiccao das peçcas anterior a foto e também, agora, posterior.
 
