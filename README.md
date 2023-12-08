@@ -63,7 +63,7 @@ cam.set(cv.CAP_PROP_EXPOSURE, -5)       # Set exposure (-7.0 to -1.0 for manual 
 ```
 A foto do tabuleiro, pela visão da camera se encontra abaixo.
 
-<img src="fotos/tabuleiro.png" width='700' height='500'>
+<img src='tabuleiro.png' width='700' height='500'>
 
 ### Detecção do tabuleiro
 
