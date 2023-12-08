@@ -93,7 +93,7 @@ clean = cv.medianBlur(clean,5)
 ```
 A imagem final, se encontra abaixo, transformando em escala HSV para escala GRAY.
 
-<img src='imagem_limpa.png' width='700' height='500'>
+<img src='fotos/imagem_limpa.png' width='700' height='500'>
 
 Agora que existem as referência do tabuleiro, é feito uma detecção do centro desses pequenos círculos e definição de suas coordenadas dentro da imagem. A função HoughCircles detecta os círculos. Fois estipilado um valor minimo e ma'ximo do raio desse circulo, assim ccomo a distancia minima entre eles. Os parametros, como dp, param1 e param2, foram selecionados empiricamente até o resultado ideal, sabendo que representam uma maior facilidade, ou dificuldade, para encontrar os círculos.
 
@@ -111,11 +111,11 @@ Aquele círculo detectado no quarto quadrante, foi denominado como "bottom_right
 
 A imagem abaixo mostra a deteccao desses dos círculos e seu centro detectado.
 
-<img src='detecção_circulos.png' width='700' height='500'>
+<img src='fotos/detecção_circulos.png' width='700' height='500'>
 
 E os quadrantes dos pontos:
 
-<img src='quadrantes.png' width='700' height='500'>
+<img src='fotos/quadrantes.png' width='700' height='500'>
 
 Um dos ultimos passos para a detecção do tabuleiro, é traçar um polígono usando as quatro coordenadas dos pontos vermelhos, como um tabuleiro.
 Usando polylines, foi desenhado esse polígono, e após isso, foi criado uma máscara sobre a imagem original, resultando em uma nova imagem. 
@@ -164,7 +164,7 @@ out = cv.warpPerspective(img_copy, M, (img_copy.shape[1], img_copy.shape[0]), fl
 
 A imagem final foi a seguinte:
 
-<img src='enquadramento tabuleiro.png' width='600' height='500'>
+<img src='fotos/enquadramento tabuleiro.png' width='600' height='500'>
 
 ### Detetecção de casas vazias e cores das peças
 
@@ -181,7 +181,7 @@ circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, dp=1, minDist=20, param1=50, 
 ```
 O resultado foi o seguinte:
 
-<img src='pecas.png' width='700' height='500'>
+<img src='fotos/pecas.png' width='700' height='500'>
 
 Assim, é visto as casas que não possuem uma peça, para futura identificação da jogada.
 
