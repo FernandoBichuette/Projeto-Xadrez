@@ -2,7 +2,17 @@
 Estudantes do Sétimo Semestre do Curso de Engenharia Mecatrônica do Insper, para disciplina de Robótica Industrial.
 
 ## Introdução
-Este documento descreve a metodologia ultillizada para projeto de um Robõ jogador de xadrez...
+No âmbito do sétimo semestre do curso de Engenharia Mecatrônica do Insper, os estudantes empenharam-se no desenvolvimento de um projeto ambicioso e inovador: um Robô Jogador de Xadrez, inserido na disciplina de Robótica Industrial. Este documento apresenta detalhadamente a metodologia adotada para conceber e implementar o sistema, destacando a ênfase na utilização de visão computacional por meio da biblioteca OpenCV, integrada à programação em Python.
+
+A etapa inicial do projeto concentrou-se na captura e interpretação da posição do tabuleiro após cada jogada do adversário. Para tal, uma câmera Logitech C920e Full HD 30FPS foi estrategicamente posicionada, permitindo ao robô compreender o término de uma jogada através do acionamento de um botão pelo oponente.
+
+O processo de análise de imagem, responsável pela identificação das peças e suas posições, foi dividido em passos claros. A biblioteca OpenCV desempenhou um papel central, permitindo a detecção dos adesivos vermelhos posicionados nos vértices do tabuleiro. Esta detecção, fundamental para a subsequente identificação do tabuleiro em si, envolveu o uso de técnicas de processamento de imagem, tais como a transformação para a escala de cores HSV e a definição de intervalos para a cor vermelha.
+
+Além disso, a criação de um polígono delimitador a partir dos adesivos vermelhos, seguida por técnicas de transformação de perspectiva, resultou na obtenção de uma imagem alinhada e ajustada do tabuleiro de xadrez.
+
+O documento explora ainda a detecção de casas vazias e a identificação das cores das peças, elementos cruciais para interpretar as jogadas adversárias. A comunicação eficaz com o código central, conectado à engine de xadrez "Stockfish", é descrita, evidenciando a capacidade do robô em interpretar as alterações no tabuleiro e responder estrategicamente.
+
+No entanto, reconhecendo a complexidade do xadrez e visando aprimorar a fidelidade do robô ao comportamento humano, o texto ressalta oportunidades de melhoria no projeto. Aspectos como a implementação de algoritmos para reconhecer regras específicas do jogo, como "promoção" e "en passant", são identificados como áreas potenciais para futuras expansões e refinamentos do sistema.
 
 ## Visão Computacional
 
