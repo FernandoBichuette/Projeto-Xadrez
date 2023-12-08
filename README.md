@@ -63,7 +63,7 @@ cam.set(cv.CAP_PROP_EXPOSURE, -5)       # Set exposure (-7.0 to -1.0 for manual 
 ```
 A foto do tabuleiro, pela visão da camera se encontra abaixo.
 
-<img src='tabuleiro.png' width='700' height='500'>
+<img src='fotos/tabuleiro.png' width='700' height='500'>
 
 ### Detecção do tabuleiro
 
@@ -82,7 +82,7 @@ upper2 = np.array([179,255,255])
 
 Assim, as cores detectadas são vistas na imagem abaixo.
 
-<img src='deteccao_cor_vermelha.png' width='700' height='500'>
+<img src='fotos/deteccao_cor_vermelha.png' width='700' height='500'>
 
 Para limpeza da imagem é feito uma erosão, seguida de uma dilatação, da imagem, com o "MORPH_OPEN". Em seguida, é criado um kernel, que irá percorrer a imagem, e fazer uma borração, através do comando "medianBlur". Após esses processos, restará na imagem com somente os adesivos vermelhos desejados para localização do tabuleiro, sem imperfeições.
 
